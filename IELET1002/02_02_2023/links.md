@@ -69,13 +69,13 @@ NB! Remember to set pinMode for all pins in ```void setup()```.
     - Functions
         - ```led.toggle()```
             - Toggles the led on and off each time the function is run
+        - ```led.setState(nextState)```
+            - Will set the ```state``` to the value specified by ```nextState```. This value will be written to the pin that the led is connected to.
     - Variables
         - ```led.pin```
             - The physical pin the led is connected to
         - ```led.state```
             - Is true when the led is on
-        - ```led.setState(nextState)```
-            - Will set the ```state``` to the value specified by ```nextState```. This value will be written to the pin that the led is connected to.
 - [Potmeter](./Libraries/Potmeter/Potmeter.ino)
     - Functions
         - ```potmeter.update()```
