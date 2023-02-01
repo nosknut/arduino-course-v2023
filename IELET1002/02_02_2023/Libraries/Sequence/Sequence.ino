@@ -15,6 +15,12 @@ struct Sequence
         timer.reset();
     }
 
+    void goTo(int newStep)
+    {
+        step = newStep;
+        timer.reset();
+    }
+
     void nextAfterDelay(unsigned long duration)
     {
         if (timer.isFinished(duration))

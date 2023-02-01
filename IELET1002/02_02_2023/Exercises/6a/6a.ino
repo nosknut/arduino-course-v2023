@@ -148,6 +148,8 @@ void updateGuiControls()
     if (downButton.pressed)
     {
         sequence.previous();
+        sequence.previous();
+        sequence.previous();
     }
 }
 
@@ -155,7 +157,7 @@ void setup()
 {
     Serial.begin(9600);
 
-    upButton.pin = 3;
+    upButton.pin = 2;
     upButton.pulldown = true;
     pinMode(upButton.pin, INPUT);
 

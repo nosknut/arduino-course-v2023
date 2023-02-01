@@ -1,3 +1,27 @@
+struct Button
+{
+    int pin;
+    // true for pulldown, false for pullup
+    bool pulldown;
+
+    bool state = false;
+    bool prevState = false;
+    bool pressed = false;
+    bool released = false;
+
+    void update()
+    {
+        if (pulldown)
+            state = digitalRead(pin);
+        else
+            state = !digitalRead(pin);
+
+        pressed = state && !prevState;
+        released = !state && prevState;
+        prevState = state;
+    }
+};
+
 struct Timer
 {
     unsigned long startTime;
@@ -21,12 +45,23 @@ struct Timer
 struct Sequence
 {
     int step = 0;
-
     Timer timer;
 
-    void reset()
+    void next()
     {
-        step = 0;
+        step += 1;
+        timer.reset();
+    }
+
+    void previous()
+    {
+        step -= 1;
+        timer.reset();
+    }
+
+    void goTo(int newStep)
+    {
+        step = newStep;
         timer.reset();
     }
 
@@ -46,81 +81,32 @@ struct Sequence
         }
     }
 
-    void goToOnCondition(int newStep, bool condition)
+    void reset()
     {
-        if (condition)
-        {
-            goTo(newStep);
-        }
-    }
-
-    void goToAfterDelay(int newStep, unsigned long duration)
-    {
-        if (timer.isFinished(duration))
-        {
-            goTo(newStep);
-        }
-    }
-
-    void next()
-    {
-        step++;
-        // Serial.println("Moving to step " + String(step));
-        timer.reset();
-    }
-
-    void previous()
-    {
-        step--;
-        timer.reset();
-    }
-
-    void goTo(int newStep)
-    {
-        step = newStep;
+        step = 0;
         timer.reset();
     }
 };
 
-struct Button
+enum State
 {
-    int pin;
-    // true for pulldown, false for pullup
-    bool pulldown;
-
-    bool state = false;
-    bool prevState = false;
-    bool pressed = false;
-    bool released = false;
-    int timesPressed = 0;
-
-    void update()
-    {
-        if (pulldown)
-            state = digitalRead(pin);
-        else
-            state = !digitalRead(pin);
-
-        pressed = state && !prevState;
-        released = !state && prevState;
-        prevState = state;
-
-        if (pressed)
-        {
-            timesPressed++;
-        }
-    }
+    STATE_ZERO = 0,
+    STATE_ONE = 2,
+    STATE_TWO = 4,
+    STATE_THREE = 6,
 };
 
+Sequence sequence;
+
+Timer timer1;
 Button upButton;
 Button downButton;
-Sequence sequence;
 
 void updateStateMachine()
 {
     switch (sequence.step)
     {
-    case 0:
+    case STATE_ZERO:
         Serial.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         Serial.println("0_________1_________2_________3");
         Serial.println("A");
@@ -129,9 +115,8 @@ void updateStateMachine()
         sequence.next();
         break;
     case 1:
-        sequence.nextAfterDelay(2000);
         break;
-    case 2:
+    case STATE_ONE:
         Serial.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         Serial.println("0_________1_________2_________3");
         Serial.println("          A");
@@ -140,9 +125,8 @@ void updateStateMachine()
         sequence.next();
         break;
     case 3:
-        sequence.nextAfterDelay(2000);
         break;
-    case 4:
+    case STATE_TWO:
         Serial.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         Serial.println("0_________1_________2_________3");
         Serial.println("                    A");
@@ -151,9 +135,8 @@ void updateStateMachine()
         sequence.next();
         break;
     case 5:
-        sequence.nextAfterDelay(2000);
         break;
-    case 6:
+    case STATE_THREE:
         Serial.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         Serial.println("0_________1_________2_________3");
         Serial.println("                              A");
@@ -162,7 +145,6 @@ void updateStateMachine()
         sequence.next();
         break;
     case 7:
-        sequence.nextAfterDelay(2000);
         break;
     case 8:
         sequence.reset();
@@ -179,7 +161,7 @@ void updateGuiControls()
 
     if (downButton.pressed)
     {
-        sequence.previous();
+        sequence.goTo(STATE_ZERO);
     }
 }
 
@@ -188,11 +170,11 @@ void setup()
     Serial.begin(9600);
 
     upButton.pin = 2;
-    upButton.pulldown = false;
+    upButton.pulldown = true;
     pinMode(upButton.pin, INPUT);
 
-    downButton.pin = 3;
-    downButton.pulldown = false;
+    downButton.pin = 4;
+    downButton.pulldown = true;
     pinMode(downButton.pin, INPUT);
 }
 
@@ -203,4 +185,6 @@ void loop()
 
     updateStateMachine();
     updateGuiControls();
+    
+    delay(100);
 }

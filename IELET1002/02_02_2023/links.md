@@ -35,6 +35,7 @@ NB! Almost all files below include a 100ms delay at the end of void loop. This i
     - [f: Sequence.nextOnCondition()](./Exercises/5f/5f.ino)
 - Exercise 6: Menu
     - [a: Creating a simple menu](./Exercises/6a/6a.ino)
+    - [b: Using enum for the menu items](./Exercises/6b/6b.ino)
 
 # Documentation
 Below is a list of the most useful functions and variables in the libraries.
@@ -95,6 +96,8 @@ NB! Remember to set pinMode for all pins in ```void setup()```.
             - Will set the sequence to the next step
         - ```sequence.previous()```
             - Will set the sequence to the previous step
+        - ```sequence.goTo(newStep)```
+            - Will set the sequence to the specified step
         - ```sequence.nextAfterDelay(duration)```
             - Will set the sequence to the next step after the duration has passed
         - ```sequence.nextOnCondition(condition)```
