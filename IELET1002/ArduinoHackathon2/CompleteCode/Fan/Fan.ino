@@ -1,3 +1,110 @@
+///////////////////////////////////////////////////////
+//////////////////// Motor ////////////////////////////
+///////////////////////////////////////////////////////
+
+// Pin to drive motor counterclockwise, when set to true
+const int MOTOR_CCW_PIN = 12;
+
+// Motor clockwise, when true
+const int MOTOR_CW_PIN = 14;
+
+// Motor speed
+const int MOTOR_ENABLE_PIN = 27;
+
+void writeMotorSpeed(int speed)
+{
+    // Set the direction
+    if (speed < 0)
+    {
+        // Negative speeds set motor clockwise
+        digitalWrite(MOTOR_CW_PIN, HIGH);
+        digitalWrite(MOTOR_CCW_PIN, LOW);
+    }
+
+    if (speed > 0)
+    {
+        // Positive speeds set motor counterclockwise
+        digitalWrite(MOTOR_CW_PIN, LOW);
+        digitalWrite(MOTOR_CCW_PIN, HIGH);
+    }
+
+    if (speed == 0)
+    {
+        // Motor stop
+        digitalWrite(MOTOR_CW_PIN, LOW);
+        digitalWrite(MOTOR_CCW_PIN, LOW);
+    }
+
+    // Set the speed
+    analogWrite(MOTOR_ENABLE_PIN, speed);
+}
+
+void updateMotorSpeed()
+{
+    switch (motorState)
+    {
+    // Stopped
+    case 0:
+        writeMotorSpeed(0);
+        break;
+    // Slow
+    case 1:
+        writeMotorSpeed(100);
+        break;
+    // Medium
+    case 2:
+        writeMotorSpeed(200);
+        break;
+    // Fast
+    case 3:
+        writeMotorSpeed(255);
+        break;
+    }
+}
+
+void increaseMotorState()
+{
+    if (motorState < 3)
+    {
+        motorState += 1;
+    }
+}
+
+void decreaseMotorState()
+{
+    if (motorState > 0)
+    {
+        motorState -= 1;
+    }
+}
+
+void setupMotor()
+{
+    pinMode(MOTOR_CCW_PIN, OUTPUT);
+    pinMode(MOTOR_CW_PIN, OUTPUT);
+    pinMode(MOTOR_ENABLE_PIN, OUTPUT);
+}
+
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+void setup()
+{
+    Serial.begin(115200);
+
+    setupMotor();
+    setupButtons();
+}
+
+void loop()
+{
+    updateButtonStates();
+    updateButtonPressedStates();
+    updateMotorSpeedControls();
+    updateMotorSpeed();
+}
+
 #include <WiFi.h>
 #include <esp_now.h>
 #include <ArduinoJson.h>

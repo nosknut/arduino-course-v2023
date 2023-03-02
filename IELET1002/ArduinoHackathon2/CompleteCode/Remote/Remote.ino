@@ -134,3 +134,150 @@ void printEspErrorCode(String message, esp_err_t errorCode)
     Serial.println("The meaning of this error code can be found at:");
     Serial.println("https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html");
 }
+
+///////////////////////////////////////////////////////
+//////////////////// Buttons //////////////////////////
+///////////////////////////////////////////////////////
+
+const int SPEED_UP_BUTTON_PIN = 24;
+const int SPEED_DOWN_BUTTON_PIN = 25;
+
+// Are the buttons currently pressed?
+bool speedUpButtonState = false;
+bool speedDownButtonState = false;
+
+// Time till next buttenpress will be registered
+int debounceDelay = 50;
+
+unsigned long speedUpButtonTimer = 0;
+unsigned long speedDownButtonTimer = 0;
+
+void updateSpeedUpButtonState()
+{
+    // if click is registered within the debounceDelay time, skip rest of function
+    if ((millis() - speedUpButtonTimer) < debounceDelay)
+        return;
+
+    // newState = true if SPEED_UP_BUTTON is pressed
+    bool newState = digitalRead(SPEED_UP_BUTTON_PIN);
+
+    // New timer if button state changes
+    if (newState != speedUpButtonState)
+        speedUpButtonTimer = millis();
+
+    speedUpButtonState = newState;
+}
+
+void updateSpeedDownButtonState()
+{
+    // if click is registered within the debounceDelay time, skip rest of function
+    if ((millis() - speedDownButtonTimer) < debounceDelay)
+        return;
+
+    // newState = true if SPEED_DOWN_BUTTON is pressed
+    bool newState = digitalRead(SPEED_DOWN_BUTTON_PIN);
+
+    // New timer if button state changes
+    if (newState != speedDownButtonState)
+        speedDownButtonTimer = millis();
+
+    speedDownButtonState = newState;
+}
+
+void setupButtons()
+{
+    pinMode(SPEED_UP_BUTTON_PIN, INPUT);
+    pinMode(SPEED_DOWN_BUTTON_PIN, INPUT);
+}
+
+void updateButtonStates()
+{
+    updateSpeedUpButtonState();
+    updateSpeedDownButtonState();
+}
+
+///////////////////////////////////////////////////////
+/////////////// Button Edge detection /////////////////
+///////////////////////////////////////////////////////
+
+// The button states from the previous loop
+bool previousSpeedUpButtonState = false;
+bool previousSpeedDownButtonState = false;
+
+// Become true when the puttons are pressed
+bool speedUpButtonPressed = false;
+bool speedDownButtonPressed = false;
+
+void updateSpeedUpButtonPressed()
+{
+    // Sets the variable speedUpButtonPressed to true if the speedUpButtonState
+    // changes from 0 to 1.
+    if ((speedUpButtonState == true) && (previousSpeedUpButtonState == false))
+    {
+        speedUpButtonPressed = true;
+        Serial.println("speedUpButton pressed");
+    }
+    else
+        speedUpButtonPressed = false;
+
+    previousSpeedUpButtonState = speedUpButtonState;
+}
+
+void updateSpeedDownButtonPressed()
+{
+    // Sets the variable speedDownButtonPressed to true if the speedDownButtonState
+    // changes from 0 to 1.
+    if ((speedDownButtonState == true) && (previousSpeedDownButtonState == false))
+    {
+        speedDownButtonPressed = true;
+        Serial.println("speedDownButton pressed");
+    }
+    else
+        speedDownButtonPressed = false;
+
+    previousSpeedDownButtonState = speedDownButtonState;
+}
+
+void updateButtonPressedStates()
+{
+    updateSpeedUpButtonPressed();
+    updateSpeedDownButtonPressed();
+}
+
+///////////////////////////////////////////////////////
+//////////////////// Logic ////////////////////////////
+///////////////////////////////////////////////////////
+
+void updateMotorSpeedControls()
+{
+    if (speedUpButtonPressed)
+    {
+        increaseMotorState();
+        Serial.println("Increasing speed");
+    }
+    if (speedDownButtonPressed)
+    {
+        decreaseMotorState();
+        Serial.println("Decreasing speed");
+    }
+}
+
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+void setup()
+{
+    Serial.begin(115200);
+
+    setupMotor();
+    setupButtons();
+}
+
+void loop()
+{
+    updateButtonStates();
+    updateButtonPressedStates();
+    updateMotorSpeedControls();
+    updateMotorSpeed();
+}
