@@ -1,5 +1,11 @@
-#include <WiFi.h>
-#include <esp_now.h>
+///////////////////////////////////////////////////////
+///////////// Serial Communication ////////////////////
+///////////////////////////////////////////////////////
+
+// The two lines below were included in the example code by
+// mistake and should not have been in the WebServerSerial.ino file.
+// #include <WiFi.h>
+// #include <esp_now.h>
 #include <ArduinoJson.h>
 
 int motorSpeed = 0;
@@ -8,13 +14,12 @@ int motorSpeed = 0;
 const int RXD1 = 26;
 const int TXD1 = 22;
 
-void setup()
+void setupSerial()
 {
-    Serial.begin(115200);
     Serial1.begin(115200, SERIAL_8N1, RXD1, TXD1);
 }
 
-void loop()
+void loopSerial()
 {
     resendSerial1();
 }
@@ -74,10 +79,12 @@ void resendSerial1()
     }
 }
 
+///////////////////////////////////////////////////////
+//////////////////// WebServer ////////////////////////
+///////////////////////////////////////////////////////
+
 #include <WiFi.h>
 #include <WebServer.h>
-
-int motorSpeed = 0;
 
 // Below is the SSID and password of the ESP32 access
 // point You will see a new Wi-Fi network with this
@@ -158,7 +165,7 @@ void handleRootPath()
 // speed up button on the website is clicked
 void handleSpeedUpPath()
 {
-    motorSpeed += 1;
+    sendSpeedUpCommand();
     Serial.println("Increasing motor speed: " + String(motorSpeed));
 
     // Respond to the http request with the status code 200
@@ -171,7 +178,7 @@ void handleSpeedUpPath()
 // speed down button on the website is clicked
 void handleSpeedDownPath()
 {
-    motorSpeed -= 1;
+    sendSpeedDownCommand();
     Serial.println("Decreasing motor speed: " + String(motorSpeed));
 
     // Respond to the http request with the status code 200
@@ -184,7 +191,7 @@ void handleSpeedDownPath()
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
-void setup()
+void setupWebServer()
 {
     Serial.begin(115200);
 
@@ -215,7 +222,23 @@ void setup()
     delay(100);
 }
 
-void loop()
+void loopWebServer()
 {
     server.handleClient();
+}
+
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+void setup()
+{
+    setupWebServer();
+    setupSerial();
+}
+
+void loop()
+{
+    loopWebServer();
+    loopSerial();
 }

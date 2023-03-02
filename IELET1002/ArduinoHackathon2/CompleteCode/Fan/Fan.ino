@@ -2,6 +2,8 @@
 //////////////////// Motor ////////////////////////////
 ///////////////////////////////////////////////////////
 
+int motorState = 0;
+
 // Pin to drive motor counterclockwise, when set to true
 const int MOTOR_CCW_PIN = 12;
 
@@ -89,27 +91,23 @@ void setupMotor()
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 
-void setup()
+void setupMotorCode()
 {
-    Serial.begin(115200);
-
     setupMotor();
-    setupButtons();
 }
 
-void loop()
+void loopMotorCode()
 {
-    updateButtonStates();
-    updateButtonPressedStates();
-    updateMotorSpeedControls();
     updateMotorSpeed();
 }
+
+///////////////////////////////////////////////////////
+//////////////////// Communication ////////////////////
+///////////////////////////////////////////////////////
 
 #include <WiFi.h>
 #include <esp_now.h>
 #include <ArduinoJson.h>
-
-int motorState = 0;
 
 // Function declarations
 // The functions are defined below the loop() function
@@ -133,13 +131,13 @@ esp_now_peer_info_t routerDeviceInfo = {
     .encrypt = false,
 };
 
-void setup()
+void setupCommunicationCode()
 {
     Serial.begin(115200);
     setupEspNow();
 }
 
-void loop()
+void loopCommunicationCode()
 {
 }
 
@@ -274,13 +272,13 @@ void processReceivedJson(DynamicJsonDocument &jsonDoc)
         if (command == "speed-up")
         {
             Serial.println("Speeding up the fan");
-            motorState += 1;
+            increaseMotorState();
         }
 
         if (command == "speed-down")
         {
             Serial.println("Slowing down the fan");
-            motorState -= 1;
+            decreaseMotorState();
         }
 
         sendData(createMotorSpeedDataJson(), routerDeviceInfo);
@@ -294,4 +292,20 @@ void printEspErrorCode(String message, esp_err_t errorCode)
     Serial.println(errorCode, HEX);
     Serial.println("The meaning of this error code can be found at:");
     Serial.println("https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html");
+}
+
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+void setup()
+{
+    setupCommunicationCode();
+    setupMotorCode();
+}
+
+void loop()
+{
+    loopCommunicationCode();
+    loopMotorCode();
 }

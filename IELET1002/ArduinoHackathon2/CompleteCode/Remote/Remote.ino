@@ -1,3 +1,7 @@
+///////////////////////////////////////////////////////
+//////////////////// Communication ////////////////////
+///////////////////////////////////////////////////////
+
 #include <WiFi.h>
 #include <esp_now.h>
 #include <ArduinoJson.h>
@@ -22,19 +26,13 @@ esp_now_peer_info_t routerDeviceInfo = {
     .encrypt = false,
 };
 
-void setup()
+void setupCommunicationCode()
 {
-    Serial.begin(115200);
     setupEspNow();
 }
 
-void loop()
+void loopCommunicationCode()
 {
-    sendData(createRemoteCommandJson("speed-up"), routerDeviceInfo);
-    delay(5000);
-
-    sendData(createRemoteCommandJson("speed-down"), routerDeviceInfo);
-    delay(5000);
 }
 
 void setupEspNow()
@@ -252,12 +250,12 @@ void updateMotorSpeedControls()
 {
     if (speedUpButtonPressed)
     {
-        increaseMotorState();
+        sendData(createRemoteCommandJson("speed-up"), routerDeviceInfo);
         Serial.println("Increasing speed");
     }
     if (speedDownButtonPressed)
     {
-        decreaseMotorState();
+        sendData(createRemoteCommandJson("speed-down"), routerDeviceInfo);
         Serial.println("Decreasing speed");
     }
 }
@@ -266,18 +264,32 @@ void updateMotorSpeedControls()
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 
-void setup()
+void setupButtonCode()
 {
     Serial.begin(115200);
 
-    setupMotor();
     setupButtons();
 }
 
-void loop()
+void loopButtonCode()
 {
     updateButtonStates();
     updateButtonPressedStates();
     updateMotorSpeedControls();
-    updateMotorSpeed();
+}
+
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+void setup()
+{
+    setupButtonCode();
+    setupCommunicationCode();
+}
+
+void loop()
+{
+    loopButtonCode();
+    loopCommunicationCode();
 }
